@@ -1,0 +1,191 @@
+{
+  "action": "CollectFreeFunctions",
+  "input_folder": "path/to/folder",
+  "tags_folder": "./assets",
+  "search_list": [
+    {
+      "name": "free",
+      "free_param_index": 0
+    },
+    {
+      "name": "close",
+      "free_param_index": 0
+    },
+    {
+      "name": "fclose",
+      "free_param_index": 0
+    },
+    {
+      "name": "delete",
+      "free_param_index": 0
+    },
+    {
+      "name": "release",
+      "free_param_index": 0
+    },
+    {
+      "name": "destroy",
+      "free_param_index": 0
+    },
+    {
+      "name": "cleanup",
+      "free_param_index": 0
+    },
+    {
+      "name": "unmap",
+      "free_param_index": 1
+    },
+    {
+      "name": "shutdown",
+      "free_param_index": 1
+    },
+    {
+      "name": "snd_socket_close",
+      "free_param_index": 0
+    },
+    {
+      "name": "pthread_mutex_destroy",
+      "free_param_index": 0
+    },
+    {
+      "name": "pthread_cond_destroy",
+      "free_param_index": 0
+    },
+    {
+      "name": "EVP_CIPHER_CTX_free",
+      "free_param_index": 0
+    },
+    {
+      "name": "SSL_free",
+      "free_param_index": 0
+    },
+    {
+      "name": "BIO_free",
+      "free_param_index": 0
+    },
+    {
+      "name": "CRYPTO_free",
+      "free_param_index": 0
+    },
+    {
+      "name": "ENGINE_free",
+      "free_param_index": 0
+    },
+    {
+      "name": "xmlFree",
+      "free_param_index": 0
+    },
+    {
+      "name": "xmlCleanupParser",
+      "free_param_index": 0
+    },
+    {
+      "name": "curl_easy_cleanup",
+      "free_param_index": 0
+    },
+    {
+      "name": "curl_slist_free_all",
+      "free_param_index": 0
+    },
+    {
+      "name": "avcodec_free_context",
+      "free_param_index": 0
+    },
+    {
+      "name": "avformat_close_input",
+      "free_param_index": 0
+    },
+    {
+      "name": "kfree",
+      "free_param_index": 0
+    },
+    {
+      "name": "kmem_cache_destroy",
+      "free_param_index": 0
+    },
+    {
+      "name": "kmem_cache_free",
+      "free_param_index": 1
+    },
+    {
+      "name": "vfree",
+      "free_param_index": 0
+    },
+    {
+      "name": "iounmap",
+      "free_param_index": 0
+    },
+    {
+      "name": "free_irq",
+      "free_param_index": 0
+    },
+    {
+      "name": "platform_driver_unregister",
+      "free_param_index": 0
+    },
+    {
+      "name": "device_unregister",
+      "free_param_index": 0
+    },
+    {
+      "name": "put_device",
+      "free_param_index": 0
+    },
+    {
+      "name": "debugfs_remove",
+      "free_param_index": 0
+    },
+    {
+      "name": "cdev_del",
+      "free_param_index": 0
+    },
+    {
+      "name": "sock_release",
+      "free_param_index": 0
+    },
+    {
+      "name": "sysfs_remove_group",
+      "free_param_index": 0
+    },
+    {
+      "name": "remove_proc_entry",
+      "free_param_index": 0
+    },
+    {
+      "name": "nf_unregister_net_hook",
+      "free_param_index": 1
+    },
+    {
+      "name": "skb_free",
+      "free_param_index": 0
+    },
+    {
+      "name": "blk_cleanup_queue",
+      "free_param_index": 0
+    },
+    {
+      "name": "pci_disable_device",
+      "free_param_index": 0
+    },
+    {
+      "name": "pci_release_region",
+      "free_param_index": 1
+    },
+    {
+      "name": "kobject_put",
+      "free_param_index": 0
+    },
+    {
+      "name": "dput",
+      "free_param_index": 0
+    },
+    {
+      "name": "put_task_struct",
+      "free_param_index": 0
+    },
+    {
+      "name": "MBUF_Destroy",
+      "free_param_index": 0
+    }
+  ]
+}

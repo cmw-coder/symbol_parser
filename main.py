@@ -6,6 +6,7 @@ from config_manager import CollectFreeFunctionsConfig, ConfigManager
 from symbol_manager import Symbol, SymbolManager
 
 import json
+import re
 
 
 def collect_symbols(
@@ -63,12 +64,12 @@ if __name__ == "__main__":
     for filename in all_files:
         print(f"Processing '{filename}'")
         symbols = collect_symbols(symbol_manager, filename)
-        search_results = [
-            symbol
-            for symbol in symbols.values()
+        result = [
+            input_item
+            for input_item in symbols.values()
             if any(
-                search_item["name"] in symbol["content"]
+                re.search(f"\\b{search_item["name"]}\\b", input_item["content"])
                 for search_item in config["search_list"]
             )
         ]
-        print(json.dumps(search_results, indent=2))
+        print(json.dumps(result, indent=2))

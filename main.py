@@ -1,6 +1,6 @@
-from argparse import ArgumentParser
 from glob import glob
-from typing import AnyStr, Dict, Optional
+from os import path
+from typing import AnyStr, Dict, Optional, TypedDict, List
 
 from config_manager import CollectFreeFunctionsConfig, ConfigManager
 from symbol_manager import Symbol, SymbolManager
@@ -48,6 +48,15 @@ def collect_symbols(
     return results
 
 
+class FreeFunction(TypedDict):
+    name: AnyStr
+    path: AnyStr
+    content: AnyStr
+    depth: int
+    free_param_indexes: List[int]
+    free_line_indexes: List[int]
+
+
 if __name__ == "__main__":
     config: CollectFreeFunctionsConfig = ConfigManager().config
 
@@ -61,15 +70,34 @@ if __name__ == "__main__":
 
     print(f"Found {len(all_files)} source files")
 
+    free_functions: Dict[AnyStr, Symbol] = {}
+
     for filename in all_files:
         print(f"Processing '{filename}'")
         symbols = collect_symbols(symbol_manager, filename)
-        result = [
-            input_item
-            for input_item in symbols.values()
-            if any(
-                re.search(f"\\b{search_item['name']}\\b", input_item["content"])
-                for search_item in config["search_list"]
-            )
-        ]
-        print(json.dumps(result, indent=2))
+
+        free_functions: List[FreeFunction] = []
+        for input_item in symbols.values():
+            free_line_indexes: List[int] = []
+            for index, content_line in enumerate(input_item["content"].splitlines()):
+                if any(
+                    re.search(f"\\b{search_item['name']}\\b", content_line)
+                    for search_item in config["search_list"]
+                ):
+                    free_line_indexes.append(index)
+            if len(free_line_indexes) > 0:
+                free_functions.append(
+                    {
+                        "name": input_item["name"],
+                        "path": input_item["path"],
+                        "content": input_item["content"],
+                        "depth": 0,
+                        "free_param_indexes": [0],
+                        "free_line_indexes": free_line_indexes,
+                    }
+                )
+        json.dump(
+            free_functions,
+            open(f"{path.basename(filename)}_free_functions.json", "w"),
+            indent=2,
+        )

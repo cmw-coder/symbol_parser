@@ -52,12 +52,12 @@ if __name__ == "__main__":
     config: CollectFreeFunctionsConfig = ConfigManager().config
 
     symbol_manager = SymbolManager(
-        function_tags_path=f"{config["tags_folder"]}/function.ctags",
-        structure_tags_path=f"{config["tags_folder"]}/structure.ctags",
+        function_tags_path=f"{config['tags_folder']}/function.ctags",
+        structure_tags_path=f"{config['tags_folder']}/structure.ctags",
     )
 
-    all_files = glob(f"{config["input_folder"]}/**/*.c", recursive=True)
-    all_files.extend(glob(f"{config["input_folder"]}/**/*.h", recursive=True))
+    all_files = glob(f"{config['input_folder']}/**/*.c", recursive=True)
+    all_files.extend(glob(f"{config['input_folder']}/**/*.h", recursive=True))
 
     print(f"Found {len(all_files)} source files")
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
             input_item
             for input_item in symbols.values()
             if any(
-                re.search(f"\\b{search_item["name"]}\\b", input_item["content"])
+                re.search(f"\\b{search_item['name']}\\b", input_item["content"])
                 for search_item in config["search_list"]
             )
         ]

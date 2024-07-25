@@ -159,6 +159,6 @@ if __name__ == "__main__":
 
         json.dump(
             free_functions,
-            open(f"{path.basename(filename)}_free_functions.json", "w"),
+            open(f"{config["output_folder"]}/{path.basename(filename)}_free_functions.json", "w"),
             indent=2,
         )

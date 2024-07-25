@@ -11,6 +11,7 @@ class BaseConfig(TypedDict):
     action: ActionType
     input_folder: AnyStr
     tags_folder: AnyStr
+    output_folder: AnyStr
 
 
 class FreeFunction(TypedDict):

@@ -1,7 +1,8 @@
 {
   "action": "CollectFreeFunctions",
-  "input_folder": "path/to/folder",
+  "input_folder": "./input",
   "tags_folder": "./assets",
+  "output_folder": "./output",
   "search_list": [
     {
       "name": "free",

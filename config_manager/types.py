@@ -14,10 +14,10 @@ class BaseConfig(TypedDict):
     output_folder: AnyStr
 
 
-class FreeFunction(TypedDict):
+class BasicFreeFunction(TypedDict):
     name: AnyStr
     free_param_index: int
 
 
 class CollectFreeFunctionsConfig(BaseConfig):
-    search_list: List[FreeFunction]
+    search_list: List[BasicFreeFunction]

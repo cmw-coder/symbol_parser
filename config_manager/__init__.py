@@ -1,2 +1,2 @@
 from .config_manager import ConfigManager
-from .types import CollectFreeFunctionsConfig
+from .types import BasicFreeFunction, CollectFreeFunctionsConfig

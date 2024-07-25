@@ -1,9 +1,10 @@
-from typing import AnyStr, Dict
+from typing import AnyStr, Dict, Optional
 
 from .constants import IGNORE_WORDS, REFERENCE_SYMBOLS
 from .types import Symbol
 from .utils import construct_symbol, retrieve_symbol_raw, get_most_similar_symbol
 
+import json
 import re
 
 
@@ -12,7 +13,45 @@ class SymbolManager:
         self.__function_tags_path = function_tags_path
         self.__structure_tags_path = structure_tags_path
 
-    def collect_symbols(
+    def collect_symbols_in_file(
+        self,
+        input_file_path: AnyStr,
+        output_file_path: Optional[AnyStr] = None,
+    ) -> Dict[AnyStr, Symbol]:
+        results: Dict[AnyStr, Symbol] = {}
+
+        with open(input_file_path, "r") as main_file:
+            depth = 0
+            main_symbols = self.collect_symbols_in_content(
+                main_file.read(), input_file_path, depth
+            )
+            if not main_symbols:
+                print("No symbols found in main file")
+                return results
+            results = results | main_symbols
+            current_symbols: Dict[AnyStr, Symbol] = {
+                key: value
+                for key, value in main_symbols.items()
+                if value["type"] != "Function" and value["type"] != "Macro"
+            }
+            while len(current_symbols) > 0:
+                depth += 1
+                old_length = len(results)
+                for _, current_symbol in current_symbols.items():
+                    current_symbols = self.collect_symbols_in_content(
+                        current_symbol["content"], current_symbol["path"], depth
+                    )
+                    if len(current_symbols) > 0:
+                        results = results | current_symbols
+                if old_length == len(results):
+                    break
+
+        if output_file_path is not None:
+            json.dump(list(results.values()), open(output_file_path, "w"), indent=2)
+
+        return results
+
+    def collect_symbols_in_content(
         self, content: AnyStr, path: AnyStr, depth: int
     ) -> Dict[AnyStr, Symbol]:
         match = re.findall(r"\b[A-Z_a-z][0-9A-Z_a-z]+\b", content)

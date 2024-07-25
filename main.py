@@ -1,51 +1,25 @@
 from glob import glob
-from os import path
-from typing import AnyStr, Dict, Optional, TypedDict, List
+from typing import AnyStr, Dict, TypedDict, List
 
 from config_manager import CollectFreeFunctionsConfig, ConfigManager
+from os import path
 from symbol_manager import Symbol, SymbolManager
+from tree_sitter import Language, Node, Parser
 
 import json
 import re
+import tree_sitter_c
 
 
-def collect_symbols(
-    _symbol_manager: SymbolManager,
-    _input_file_path: AnyStr,
-    _output_file_path: Optional[AnyStr] = None,
-) -> Dict[AnyStr, Symbol]:
-    results: Dict[AnyStr, Symbol] = {}
+class FreeExpression(TypedDict):
+    name: AnyStr
+    freed_parameters: List[AnyStr]
+    content: AnyStr
 
-    with open(_input_file_path, "r") as main_file:
-        depth = 0
-        main_symbols = _symbol_manager.collect_symbols(
-            main_file.read(), _input_file_path, depth
-        )
-        if not main_symbols:
-            print("No symbols found in main file")
-            return results
-        results = results | main_symbols
-        current_symbols: Dict[AnyStr, Symbol] = {
-            key: value
-            for key, value in main_symbols.items()
-            if value["type"] != "Function" and value["type"] != "Macro"
-        }
-        while len(current_symbols) > 0:
-            depth += 1
-            old_length = len(results)
-            for _, current_symbol in current_symbols.items():
-                current_symbols = _symbol_manager.collect_symbols(
-                    current_symbol["content"], current_symbol["path"], depth
-                )
-                if len(current_symbols) > 0:
-                    results = results | current_symbols
-            if old_length == len(results):
-                break
 
-    if _output_file_path is not None:
-        json.dump(list(results.values()), open(_output_file_path, "w"), indent=2)
-
-    return results
+class FreedParam(TypedDict):
+    name: AnyStr
+    index: int
 
 
 class FreeFunction(TypedDict):
@@ -53,11 +27,40 @@ class FreeFunction(TypedDict):
     path: AnyStr
     content: AnyStr
     depth: int
-    free_param_indexes: List[int]
-    free_line_indexes: List[int]
+    called_free_expressions: List[FreeExpression]
+    freed_params: List[FreedParam]
+
+
+def find_typed_nodes(nodes: List[Node], node_type: AnyStr) -> List[Node]:
+    result = []
+    for node in nodes:
+        if node.type == node_type:
+            result.append(node)
+        if len(node.children) > 0:
+            result.extend(
+                [
+                    item
+                    for item in find_typed_nodes(node.children, node_type)
+                    if item is not None
+                ]
+            )
+
+    return result
 
 
 if __name__ == "__main__":
+    language = Language(tree_sitter_c.language())
+    parser = Parser(language)
+    call_expression_query = language.query(
+        "(call_expression"
+        "  function: (identifier) @name"
+        "  arguments: (argument_list) @arguments"
+        ") @expression"
+    )
+    function_declarator_query = language.query(
+        "(function_declarator parameters: (parameter_list) @parameters)"
+    )
+
     config: CollectFreeFunctionsConfig = ConfigManager().config
 
     symbol_manager = SymbolManager(
@@ -74,28 +77,87 @@ if __name__ == "__main__":
 
     for filename in all_files:
         print(f"Processing '{filename}'")
-        symbols = collect_symbols(symbol_manager, filename)
+        symbols = list(symbol_manager.collect_symbols_in_file(filename).values())
 
         free_functions: List[FreeFunction] = []
-        for input_item in symbols.values():
-            free_line_indexes: List[int] = []
-            for index, content_line in enumerate(input_item["content"].splitlines()):
-                if any(
-                    re.search(f"\\b{search_item['name']}\\b", content_line)
-                    for search_item in config["search_list"]
-                ):
-                    free_line_indexes.append(index)
-            if len(free_line_indexes) > 0:
-                free_functions.append(
-                    {
-                        "name": input_item["name"],
-                        "path": input_item["path"],
-                        "content": input_item["content"],
-                        "depth": 0,
-                        "free_param_indexes": [0],
-                        "free_line_indexes": free_line_indexes,
-                    }
-                )
+        for input_item in [
+            symbol
+            for symbol in symbols
+            if symbol["type"] == "Function" or symbol["type"] == "Macro"
+        ]:
+            content_bytes = bytes(
+                re.sub(r"\b(IN|OUT|INOUT)\b", "", input_item["content"]), "utf-8"
+            )
+            tree = parser.parse(content_bytes)
+            function_declarator_matches = function_declarator_query.matches(
+                tree.root_node
+            )
+            if len(function_declarator_matches) != 1:
+                continue
+
+            call_expression_matches = call_expression_query.matches(tree.root_node)
+            if len(call_expression_matches) > 0:
+                called_free_expressions: List[FreeExpression] = []
+                freed_params: List[FreedParam] = []
+                for match in [_match[1] for _match in call_expression_matches]:
+                    expression = content_bytes[
+                        match["expression"].start_byte : match["expression"].end_byte
+                    ].decode()
+                    name = content_bytes[
+                        match["name"].start_byte : match["name"].end_byte
+                    ].decode()
+                    call_parameter_nodes = find_typed_nodes(
+                        match["arguments"].children, "identifier"
+                    )
+                    freed_parameters = [
+                        content_bytes[item.start_byte : item.end_byte].decode()
+                        for item in call_parameter_nodes
+                    ]
+                    if len(freed_parameters) > 0:
+                        for search_item in config["search_list"]:
+                            if name == search_item["name"]:
+                                free_identifier = freed_parameters[
+                                    search_item["free_param_index"]
+                                ]
+                                function_parameters = [
+                                    content_bytes[
+                                        item.start_byte : item.end_byte
+                                    ].decode()
+                                    for item in find_typed_nodes(
+                                        function_declarator_matches[0][1][
+                                            "parameters"
+                                        ].children,
+                                        "identifier",
+                                    )
+                                ]
+                                if free_identifier in function_parameters:
+                                    freed_params.append(
+                                        FreedParam(
+                                            name=free_identifier,
+                                            index=function_parameters.index(
+                                                free_identifier
+                                            ),
+                                        )
+                                    )
+                                called_free_expressions.append(
+                                    FreeExpression(
+                                        name=name,
+                                        freed_parameters=freed_parameters,
+                                        content=expression,
+                                    )
+                                )
+                if len(called_free_expressions) > 0:
+                    free_functions.append(
+                        FreeFunction(
+                            name=input_item["name"],
+                            path=input_item["path"],
+                            content=input_item["content"],
+                            depth=0,
+                            called_free_expressions=called_free_expressions,
+                            freed_params=freed_params,
+                        )
+                    )
+
         json.dump(
             free_functions,
             open(f"{path.basename(filename)}_free_functions.json", "w"),

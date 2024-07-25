@@ -75,9 +75,12 @@ if __name__ == "__main__":
 
     free_functions: Dict[AnyStr, Symbol] = {}
 
-    for filename in all_files:
-        print(f"Processing '{filename}'")
+    for file_index, filename in enumerate(all_files):
+        process_indicator = f"[{file_index}/{len(all_files)}]"
+        print(f"{process_indicator} Processing '{filename}'...")
+
         symbols = list(symbol_manager.collect_symbols_in_file(filename).values())
+        print(f"{process_indicator} Found {len(symbols)} symbols")
 
         free_functions: List[FreeFunction] = []
         for input_item in [
@@ -156,9 +159,12 @@ if __name__ == "__main__":
                             freed_params=freed_params,
                         )
                     )
-
+        print(f"{process_indicator} Found {len(free_functions)} free functions")
         json.dump(
             free_functions,
-            open(f"{config["output_folder"]}/{path.basename(filename)}_free_functions.json", "w"),
+            open(
+                f"{config['output_folder']}/{path.basename(filename)}_free_functions.json",
+                "w",
+            ),
             indent=2,
         )

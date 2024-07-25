@@ -26,7 +26,7 @@ if __name__ == "__main__":
     print(f"Found {len(all_files)} source files")
 
     for file_index, filename in enumerate(all_files):
-        process_indicator = f"[{file_index}/{len(all_files)}]"
+        process_indicator = f"[{file_index + 1}/{len(all_files)}]"
         print(f"{process_indicator} Processing '{filename}'...")
 
         symbols: List[Symbol] = list(

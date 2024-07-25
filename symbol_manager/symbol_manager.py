@@ -20,7 +20,7 @@ class SymbolManager:
     ) -> Dict[AnyStr, Symbol]:
         results: Dict[AnyStr, Symbol] = {}
 
-        with open(input_file_path, "r") as main_file:
+        with open(input_file_path, "r", encoding="gbk") as main_file:
             depth = 0
             main_symbols = self.collect_symbols_in_content(
                 main_file.read(), input_file_path, depth

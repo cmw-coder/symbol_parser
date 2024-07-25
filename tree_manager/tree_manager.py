@@ -19,7 +19,7 @@ class TreeManager:
             ") @expression"
         )
         self.__function_declarator_query = language.query(
-            "(function_declarator parameters: (parameter_list) @parameters)"
+            "(function_declarator parameters: (parameter_list) @parameters) @declarator"
         )
         self.__parser = Parser(language)
 
@@ -95,11 +95,17 @@ class TreeManager:
                                     )
                                 )
                 if len(called_free_expressions) > 0:
+                    function_declarator = content_bytes[
+                        function_declarator_matches[0][1]["declarator"]
+                        .start_byte : function_declarator_matches[0][1]["declarator"]
+                        .end_byte
+                    ].decode()
                     free_functions.append(
                         FreeFunction(
-                            name=input_item["name"],
-                            path=input_item["path"],
-                            content=input_item["content"],
+                            function_name=input_item["name"],
+                            function_path=input_item["path"],
+                            function_content=input_item["content"],
+                            function_declarator=function_declarator,
                             depth=0,
                             called_free_expressions=called_free_expressions,
                             freed_params=freed_params,

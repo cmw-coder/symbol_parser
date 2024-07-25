@@ -19,7 +19,7 @@ def construct_symbol(symbol_raw: SymbolRaw, depth: int) -> Symbol:
             "type": symbol_raw["kind"].name,
             "content": "".join(
                 itertools.islice(
-                    open(symbol_raw["path"], "r"),
+                    open(symbol_raw["path"], "r", encoding="gbk"),
                     symbol_raw["line"] - 1,
                     end_line,
                 )

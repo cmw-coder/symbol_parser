@@ -13,9 +13,10 @@ class FreedParam(TypedDict):
 
 
 class FreeFunction(TypedDict):
-    name: AnyStr
-    path: AnyStr
-    content: AnyStr
+    function_name: AnyStr
+    function_path: AnyStr
+    function_content: AnyStr
+    function_declarator: AnyStr
     depth: int
     called_free_expressions: List[FreeExpression]
     freed_params: List[FreedParam]

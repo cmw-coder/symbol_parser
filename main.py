@@ -13,7 +13,7 @@ import tree_sitter_c
 
 class FreeExpression(TypedDict):
     name: AnyStr
-    freed_parameters: List[AnyStr]
+    freed_parameter: AnyStr
     content: AnyStr
 
 
@@ -106,17 +106,16 @@ if __name__ == "__main__":
                     name = content_bytes[
                         match["name"].start_byte : match["name"].end_byte
                     ].decode()
-                    call_parameter_nodes = find_typed_nodes(
-                        match["arguments"].children, "identifier"
-                    )
-                    freed_parameters = [
+                    call_parameters = [
                         content_bytes[item.start_byte : item.end_byte].decode()
-                        for item in call_parameter_nodes
+                        for item in find_typed_nodes(
+                            match["arguments"].children, "identifier"
+                        )
                     ]
-                    if len(freed_parameters) > 0:
+                    if len(call_parameters) > 0:
                         for search_item in config["search_list"]:
                             if name == search_item["name"]:
-                                free_identifier = freed_parameters[
+                                freed_parameter = call_parameters[
                                     search_item["free_param_index"]
                                 ]
                                 function_parameters = [
@@ -130,19 +129,19 @@ if __name__ == "__main__":
                                         "identifier",
                                     )
                                 ]
-                                if free_identifier in function_parameters:
+                                if freed_parameter in function_parameters:
                                     freed_params.append(
                                         FreedParam(
-                                            name=free_identifier,
+                                            name=freed_parameter,
                                             index=function_parameters.index(
-                                                free_identifier
+                                                freed_parameter
                                             ),
                                         )
                                     )
                                 called_free_expressions.append(
                                     FreeExpression(
                                         name=name,
-                                        freed_parameters=freed_parameters,
+                                        freed_parameter=freed_parameter,
                                         content=expression,
                                     )
                                 )

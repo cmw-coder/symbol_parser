@@ -1,5 +1,6 @@
 from glob import glob
 from os import path
+from pathlib import Path
 from typing import List
 
 from config_manager import CollectFreeFunctionsConfig, ConfigManager
@@ -38,11 +39,16 @@ if __name__ == "__main__":
             symbols, config["search_list"]
         )
         print(f"{process_indicator} Found {len(free_functions)} free functions")
+        output_path = (
+            f"{config['output_folder']}/{path.basename(filename)}_free_functions.json"
+        )
+        Path(config['output_folder']).mkdir(parents=True, exist_ok=True)
         json.dump(
             free_functions,
             open(
-                f"{config['output_folder']}/{path.basename(filename)}_free_functions.json",
+                output_path,
                 "w",
             ),
             indent=2,
         )
+        print(f"{process_indicator} Saved free functions to '{output_path}'")

@@ -14,6 +14,10 @@ class BaseConfig(TypedDict):
     output_folder: AnyStr
 
 
+class CollectAllSymbolsConfig(BaseConfig):
+    reverse: bool
+
+
 class BasicFreeFunction(TypedDict):
     name: AnyStr
     free_param_index: int

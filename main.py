@@ -1,9 +1,14 @@
-from glob import glob
 from os import path
 from pathlib import Path
 from typing import List
 
-from config_manager import CollectFreeFunctionsConfig, ConfigManager
+from config_manager import (
+    ActionType,
+    BasicFreeFunction,
+    CollectAllSymbolsConfig,
+    CollectFreeFunctionsConfig,
+    ConfigManager,
+)
 from symbol_manager import Symbol, SymbolManager
 from tree_manager import TreeManager
 
@@ -13,42 +18,64 @@ import tree_sitter_c
 
 if __name__ == "__main__":
     tree_manager = TreeManager(tree_sitter_c.language())
+    config_manager = ConfigManager()
+    action = config_manager.action
+    input_files = config_manager.input_files
+    output_folder = config_manager.output_folder
+    symbol_manager = config_manager.use_symbol_manager()
 
-    config: CollectFreeFunctionsConfig = ConfigManager().config
+    reverse: bool = False
+    search_list: List[BasicFreeFunction] = []
+    if action == ActionType.CollectAllSymbols:
+        specific_config: CollectAllSymbolsConfig = config_manager.use_specific_config(
+            CollectAllSymbolsConfig
+        )
+        if "reverse" in specific_config:
+            reverse = specific_config["reverse"]
+        else:
+            raise ValueError("'reverse' not found in config")
+    elif action == ActionType.CollectFreeFunctions:
+        specific_config: CollectFreeFunctionsConfig = (
+            config_manager.use_specific_config(CollectFreeFunctionsConfig)
+        )
+        if "search_list" in specific_config:
+            search_list = specific_config["search_list"]
+        else:
+            raise ValueError("'search_list' not found in config")
+    else:
+        raise ValueError(f"Unknown action '{action}'")
 
-    symbol_manager = SymbolManager(
-        function_tags_path=f"{config['tags_folder']}/function.ctags",
-        structure_tags_path=f"{config['tags_folder']}/structure.ctags",
-    )
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
 
-    all_files = glob(f"{config['input_folder']}/**/*.c", recursive=True)
-    all_files.extend(glob(f"{config['input_folder']}/**/*.h", recursive=True))
+    print(f"Start '{action}' action")
+    print(f"Found {len(input_files)} source files")
 
-    print(f"Found {len(all_files)} source files")
-
-    for file_index, filename in enumerate(all_files):
-        process_indicator = f"[{file_index + 1}/{len(all_files)}]"
+    for file_index, filename in enumerate(input_files):
+        process_indicator = f"[{file_index + 1}/{len(input_files)}]"
         print(f"{process_indicator} Processing '{filename}'...")
 
         symbols: List[Symbol] = list(
-            symbol_manager.collect_symbols_in_file(filename).values()
+            symbol_manager.collect_symbols_in_file(filename, reverse).values()
         )
         print(f"{process_indicator} Found {len(symbols)} symbols")
 
-        free_functions = tree_manager.collect_free_functions(
-            symbols, config["search_list"]
-        )
-        print(f"{process_indicator} Found {len(free_functions)} free functions")
-        output_path = (
-            f"{config['output_folder']}/{path.basename(filename)}_free_functions.json"
-        )
-        Path(config['output_folder']).mkdir(parents=True, exist_ok=True)
-        json.dump(
-            free_functions,
-            open(
-                output_path,
-                "w",
-            ),
-            indent=2,
-        )
-        print(f"{process_indicator} Saved free functions to '{output_path}'")
+        if action == ActionType.CollectAllSymbols:
+            output_path = f"{output_folder}/{path.basename(filename)}_symbols.json"
+            json.dump(symbols, open(output_path, "w"), indent=2)
+            print(f"{process_indicator} Saved symbols to '{output_path}'")
+        elif action == ActionType.CollectFreeFunctions:
+            free_functions = tree_manager.collect_free_functions(symbols, search_list)
+            print(f"{process_indicator} Found {len(free_functions)} free functions")
+
+            output_path = (
+                f"{output_folder}/{path.basename(filename)}_free_functions.json"
+            )
+            json.dump(
+                free_functions,
+                open(
+                    output_path,
+                    "w",
+                ),
+                indent=2,
+            )
+            print(f"{process_indicator} Saved free functions to '{output_path}'")

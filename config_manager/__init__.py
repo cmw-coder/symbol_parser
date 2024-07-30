@@ -1,2 +1,7 @@
 from .config_manager import ConfigManager
-from .types import BasicFreeFunction, CollectFreeFunctionsConfig
+from .types import (
+    ActionType,
+    BasicFreeFunction,
+    CollectAllSymbolsConfig,
+    CollectFreeFunctionsConfig,
+)

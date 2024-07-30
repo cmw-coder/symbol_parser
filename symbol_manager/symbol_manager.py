@@ -1,4 +1,4 @@
-from typing import AnyStr, Dict, Optional
+from typing import AnyStr, Dict
 
 from .constants import IGNORE_WORDS, REFERENCE_SYMBOLS
 from .types import Symbol
@@ -9,7 +9,6 @@ from .utils import (
     open_read_file,
 )
 
-import json
 import re
 
 
@@ -21,7 +20,7 @@ class SymbolManager:
     def collect_symbols_in_file(
         self,
         input_file_path: AnyStr,
-        output_file_path: Optional[AnyStr] = None,
+        reverse: bool = False,
     ) -> Dict[AnyStr, Symbol]:
         results: Dict[AnyStr, Symbol] = {}
 
@@ -60,10 +59,9 @@ class SymbolManager:
                 if old_length == len(results):
                     break
 
-        results = dict(sorted(results.items(), key=lambda item: item[1]["depth"]))
-
-        if output_file_path is not None:
-            json.dump(list(results.values()), open(output_file_path, "w"), indent=2)
+        results = dict(
+            sorted(results.items(), key=lambda item: item[1]["depth"], reverse=reverse)
+        )
 
         return results
 

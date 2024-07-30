@@ -1,11 +1,8 @@
-from .types import ActionType, CollectFreeFunctionsConfig
+from .types import ActionType, BaseConfig
 
-EXAMPLE_COLLECT_FREE_FUNCTIONS_CONFIG: CollectFreeFunctionsConfig = {
-    "action": ActionType.CollectFreeFunctions,
+EXAMPLE_COLLECT_FREE_FUNCTIONS_CONFIG: BaseConfig = {
+    "action": ActionType.CollectAllSymbols,
     "input_folder": "path/to/folder",
     "tags_folder": "path/to/folder",
-    "search_list": [
-        {"name": "free_function_1", "free_param_index": 0},
-        {"name": "free_function_2", "free_param_index": 1},
-    ],
+    "output_folder": "path/to/folder",
 }

@@ -1,0 +1,7 @@
+{
+  "action": "CollectFreeFunctions",
+  "input_folder": "./input",
+  "tags_folder": "./assets",
+  "output_folder": "./output",
+  "reverse": false
+}

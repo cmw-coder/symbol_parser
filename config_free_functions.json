@@ -1,7 +1,7 @@
 {
   "action": "CollectFreeFunctions",
   "input_folder": "./input",
-  "tags_folder": "./assets",
+  "tags_folder": "./tags",
   "output_folder": "./output",
   "search_list": [
     {

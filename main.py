@@ -9,7 +9,7 @@ from config_manager import (
     CollectFreeFunctionsConfig,
     ConfigManager,
 )
-from symbol_manager import Symbol, SymbolManager
+from symbol_manager import Symbol
 from tree_manager import TreeManager
 
 import json

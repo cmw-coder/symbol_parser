@@ -2,7 +2,12 @@ from typing import AnyStr, Dict, Optional
 
 from .constants import IGNORE_WORDS, REFERENCE_SYMBOLS
 from .types import Symbol
-from .utils import construct_symbol, retrieve_symbol_raw, get_most_similar_symbol
+from .utils import (
+    construct_symbol,
+    retrieve_symbol_raw,
+    get_most_similar_symbol,
+    open_read_file,
+)
 
 import json
 import re
@@ -20,7 +25,7 @@ class SymbolManager:
     ) -> Dict[AnyStr, Symbol]:
         results: Dict[AnyStr, Symbol] = {}
 
-        with open(input_file_path, "r", encoding="gbk") as main_file:
+        with open_read_file(input_file_path) as main_file:
             depth = 0
             main_symbols = self.collect_symbols_in_content(
                 main_file.read(), input_file_path, depth
@@ -38,13 +43,24 @@ class SymbolManager:
                 depth += 1
                 old_length = len(results)
                 for _, current_symbol in current_symbols.items():
-                    current_symbols = self.collect_symbols_in_content(
+                    new_symbols = self.collect_symbols_in_content(
                         current_symbol["content"], current_symbol["path"], depth
                     )
-                    if len(current_symbols) > 0:
-                        results = results | current_symbols
+                    if len(new_symbols) > 0:
+                        for new_symbol_name, new_symbol in new_symbols.items():
+                            if new_symbol_name in results:
+                                if (
+                                    results[new_symbol_name]["depth"]
+                                    > new_symbol["depth"]
+                                ):
+                                    results[new_symbol_name] = new_symbol
+                            else:
+                                results[new_symbol_name] = new_symbol
+                    current_symbols = new_symbols
                 if old_length == len(results):
                     break
+
+        results = dict(sorted(results.items(), key=lambda item: item[1]["depth"]))
 
         if output_file_path is not None:
             json.dump(list(results.values()), open(output_file_path, "w"), indent=2)

@@ -1,5 +1,6 @@
+from chardet import universaldetector
 from difflib import SequenceMatcher
-from typing import AnyStr, List
+from typing import AnyStr, List, TextIO
 
 from .types import Symbol, SymbolKind, SymbolRaw
 
@@ -19,7 +20,7 @@ def construct_symbol(symbol_raw: SymbolRaw, depth: int) -> Symbol:
             "type": symbol_raw["kind"].name,
             "content": "".join(
                 itertools.islice(
-                    open(symbol_raw["path"], "r", encoding="gbk"),
+                    open_read_file(symbol_raw["path"]),
                     symbol_raw["line"] - 1,
                     end_line,
                 )
@@ -30,6 +31,19 @@ def construct_symbol(symbol_raw: SymbolRaw, depth: int) -> Symbol:
         }
     except IOError:
         print("Error reading file: ", symbol_raw["path"])
+
+
+def open_read_file(file_path) -> TextIO:
+    encoding: AnyStr
+    with open(file_path, "rb") as file:
+        detector = universaldetector.UniversalDetector()
+        for line in file:
+            detector.feed(line)
+            if detector.done:
+                break
+        detector.close()
+    encoding = detector.result["encoding"]
+    return open(file_path, "r", encoding=encoding)
 
 
 def retrieve_symbol_raw(tags_path: AnyStr, symbol_str: AnyStr) -> List[SymbolRaw]:

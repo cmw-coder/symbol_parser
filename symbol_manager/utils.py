@@ -43,7 +43,7 @@ def open_read_file(file_path) -> TextIO:
                 break
         detector.close()
     encoding = detector.result["encoding"]
-    return open(file_path, "r", encoding=encoding)
+    return open(file_path, "r", encoding=encoding, errors="backslashreplace")
 
 
 def retrieve_symbol_raw(tags_path: AnyStr, symbol_str: AnyStr) -> List[SymbolRaw]:
@@ -58,6 +58,7 @@ def retrieve_symbol_raw(tags_path: AnyStr, symbol_str: AnyStr) -> List[SymbolRaw
         ],
         capture_output=True,
         encoding="gbk",
+        errors="backslashreplace",
         text=True,
     )
 

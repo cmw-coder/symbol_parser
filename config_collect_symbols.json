@@ -3,5 +3,5 @@
   "input_folder": "./input",
   "tags_folder": "./tags",
   "output_folder": "./output",
-  "reverse": false
+  "reverse": true
 }

@@ -29,35 +29,31 @@ class SymbolManager:
             main_symbols = self.collect_symbols_in_content(
                 main_file.read(), input_file_path, depth
             )
-            if not main_symbols:
-                print("No symbols found in main file")
-                return results
             results = results | main_symbols
-            current_symbols: Dict[AnyStr, Symbol] = {
-                key: value
-                for key, value in main_symbols.items()
-                if value["type"] != "Function" and value["type"] != "Macro"
-            }
-            while len(current_symbols) > 0:
-                depth += 1
-                old_length = len(results)
-                for _, current_symbol in current_symbols.items():
-                    new_symbols = self.collect_symbols_in_content(
-                        current_symbol["content"], current_symbol["path"], depth
-                    )
-                    if len(new_symbols) > 0:
-                        for new_symbol_name, new_symbol in new_symbols.items():
-                            if new_symbol_name in results:
-                                if (
-                                    results[new_symbol_name]["depth"]
-                                    > new_symbol["depth"]
-                                ):
-                                    results[new_symbol_name] = new_symbol
-                            else:
-                                results[new_symbol_name] = new_symbol
-                    current_symbols = new_symbols
-                if old_length == len(results):
-                    break
+
+        current_symbols: Dict[AnyStr, Symbol] = {
+            key: value
+            for key, value in results.items()
+            if value["type"] != "Function" and value["type"] != "Macro"
+        }
+        while len(current_symbols) > 0:
+            depth += 1
+            old_length = len(results)
+            new_symbols: Dict[AnyStr, Symbol] = {}
+            for current_symbol in current_symbols.values():
+                for temp_symbol in self.collect_symbols_in_content(
+                    current_symbol["content"], current_symbol["path"], depth
+                ).values():
+                    if (
+                        temp_symbol["type"] != "Function"
+                        and temp_symbol["type"] != "Macro"
+                    ):
+                        if temp_symbol["name"] not in results:
+                            new_symbols[temp_symbol["name"]] = temp_symbol
+                        results[temp_symbol["name"]] = temp_symbol
+            if old_length == len(results):
+                break
+            current_symbols = new_symbols
 
         results = dict(
             sorted(results.items(), key=lambda item: item[1]["depth"], reverse=reverse)

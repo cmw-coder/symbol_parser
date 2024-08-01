@@ -4,6 +4,7 @@ from typing import AnyStr, Dict, TypedDict
 
 class SymbolKind(Enum):
     Enum = "g"
+    Enumerators = "e"
     Function = "f"
     Macro = "d"
     Reference = "t"

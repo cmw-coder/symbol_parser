@@ -73,17 +73,10 @@ class SymbolManager:
             elif symbol_str[-2:] in REFERENCE_SYMBOLS:
                 temp_symbol = self.__retrieve_reference(symbol_str, path, depth)
             else:
-                temp_symbol = self.__retrieve_function(symbol_str, path, depth)
+                temp_symbol = self.__retrieve_others(symbol_str, path, depth)
             if temp_symbol is not None and temp_symbol["name"] not in results:
                 results[temp_symbol["name"]] = temp_symbol
         return results
-
-    def __retrieve_function(
-        self, symbol_str: AnyStr, path: AnyStr, depth: int
-    ) -> Symbol | None:
-        raw_list = retrieve_symbol_raw(self.__function_tags_path, symbol_str)
-        if len(raw_list) > 0:
-            return construct_symbol(get_most_similar_symbol(raw_list, path), depth)
 
     def __retrieve_global(
         self, symbol_str: AnyStr, path: AnyStr, depth: int
@@ -91,6 +84,35 @@ class SymbolManager:
         raw_list = retrieve_symbol_raw(self.__structure_tags_path, symbol_str)
         if len(raw_list) > 0:
             return construct_symbol(get_most_similar_symbol(raw_list, path), depth)
+
+    def __retrieve_others(
+        self, symbol_str: AnyStr, path: AnyStr, depth: int
+    ) -> Symbol | None:
+        raw_list = retrieve_symbol_raw(self.__structure_tags_path, symbol_str)
+        if len(raw_list) > 0:
+            raw_most_similar = get_most_similar_symbol(raw_list, path)
+            if "enum" in raw_most_similar["extra_fields"]:
+                raw_enum_list = retrieve_symbol_raw(
+                    self.__structure_tags_path, raw_most_similar["extra_fields"]["enum"]
+                )
+                if len(raw_enum_list) > 0:
+                    return construct_symbol(
+                        get_most_similar_symbol(raw_enum_list, path), depth
+                    )
+
+        raw_list = retrieve_symbol_raw(self.__function_tags_path, symbol_str)
+        if len(raw_list) > 0:
+            raw_most_similar = get_most_similar_symbol(raw_list, path)
+            if "enum" in raw_most_similar["extra_fields"]:
+                raw_list = retrieve_symbol_raw(
+                    self.__structure_tags_path, raw_most_similar["extra_fields"]["enum"]
+                )
+                if len(raw_list) > 0:
+                    return construct_symbol(
+                        get_most_similar_symbol(raw_list, path), depth
+                    )
+            else:
+                return construct_symbol(get_most_similar_symbol(raw_list, path), depth)
 
     def __retrieve_reference(
         self, symbol_str: AnyStr, path: AnyStr, depth: int

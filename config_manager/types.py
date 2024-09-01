@@ -3,8 +3,8 @@ from typing import AnyStr, List, TypedDict
 
 
 class ActionType(StrEnum):
-    CollectAllSymbols = "CollectAllSymbols"
-    CollectFreeFunctions = "CollectFreeFunctions"
+    CollectSymbols = "CollectSymbols"
+    CollectFunctions = "CollectFunctions"
 
 
 class BaseConfig(TypedDict):
@@ -14,14 +14,14 @@ class BaseConfig(TypedDict):
     output_folder: AnyStr
 
 
-class CollectAllSymbolsConfig(BaseConfig):
+class CollectSymbolsConfig(BaseConfig):
     reverse: bool
 
 
-class BasicFreeFunction(TypedDict):
+class FunctionSearchData(TypedDict):
     name: AnyStr
-    free_param_index: int
+    param_index: int
 
 
 class CollectFreeFunctionsConfig(BaseConfig):
-    search_list: List[BasicFreeFunction]
+    search_list: List[FunctionSearchData]

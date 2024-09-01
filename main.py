@@ -4,8 +4,8 @@ from typing import List
 
 from config_manager import (
     ActionType,
-    BasicFreeFunction,
-    CollectAllSymbolsConfig,
+    FunctionSearchData,
+    CollectSymbolsConfig,
     CollectFreeFunctionsConfig,
     ConfigManager,
 )
@@ -25,16 +25,16 @@ if __name__ == "__main__":
     symbol_manager = config_manager.use_symbol_manager()
 
     reverse: bool = False
-    search_list: List[BasicFreeFunction] = []
-    if action == ActionType.CollectAllSymbols:
-        specific_config: CollectAllSymbolsConfig = config_manager.use_specific_config(
-            CollectAllSymbolsConfig
+    search_list: List[FunctionSearchData] = []
+    if action == ActionType.CollectSymbols:
+        specific_config: CollectSymbolsConfig = config_manager.use_specific_config(
+            CollectSymbolsConfig
         )
         if "reverse" in specific_config:
             reverse = specific_config["reverse"]
         else:
             raise ValueError("'reverse' not found in config")
-    elif action == ActionType.CollectFreeFunctions:
+    elif action == ActionType.CollectFunctions:
         specific_config: CollectFreeFunctionsConfig = (
             config_manager.use_specific_config(CollectFreeFunctionsConfig)
         )
@@ -59,11 +59,11 @@ if __name__ == "__main__":
         )
         print(f"{process_indicator} Found {len(symbols)} symbols")
 
-        if action == ActionType.CollectAllSymbols:
+        if action == ActionType.CollectSymbols:
             output_path = f"{output_folder}/{path.basename(filename)}_symbols.json"
             json.dump(symbols, open(output_path, "w"), indent=2)
             print(f"{process_indicator} Saved symbols to '{output_path}'")
-        elif action == ActionType.CollectFreeFunctions:
+        elif action == ActionType.CollectFunctions:
             free_functions = tree_manager.collect_free_functions(symbols, search_list)
             print(f"{process_indicator} Found {len(free_functions)} free functions")
 

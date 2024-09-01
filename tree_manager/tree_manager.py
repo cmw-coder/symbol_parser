@@ -3,7 +3,7 @@ from typing import List
 
 from .types import FreedParam, FreeExpression, FreeFunction
 from .utils import find_nodes_with_type
-from config_manager import BasicFreeFunction
+from config_manager import FunctionSearchData
 from symbol_manager import Symbol
 
 import re
@@ -24,7 +24,7 @@ class TreeManager:
         self.__parser = Parser(language)
 
     def collect_free_functions(
-        self, symbols: List[Symbol], basic_free_functions: List[BasicFreeFunction]
+        self, symbols: List[Symbol], basic_free_functions: List[FunctionSearchData]
     ) -> List[FreeFunction]:
         free_functions: List[FreeFunction] = []
         for input_item in [
@@ -65,7 +65,7 @@ class TreeManager:
                         for search_item in basic_free_functions:
                             if name == search_item["name"]:
                                 freed_parameter = call_parameters[
-                                    search_item["free_param_index"]
+                                    search_item["param_index"]
                                 ]
                                 function_parameters = [
                                     content_bytes[

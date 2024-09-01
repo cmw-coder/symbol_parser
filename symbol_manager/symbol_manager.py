@@ -50,6 +50,7 @@ class SymbolManager:
                     ):
                         if temp_symbol["name"] not in results:
                             new_symbols[temp_symbol["name"]] = temp_symbol
+                    if temp_symbol["type"] != "Function":
                         results[temp_symbol["name"]] = temp_symbol
             if old_length == len(results):
                 break
